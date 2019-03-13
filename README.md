@@ -1,3 +1,3 @@
 # acmicpc
-# acmicpc
-# acmicpc
+
+codes to submit (https://www.acmicpc.net)
