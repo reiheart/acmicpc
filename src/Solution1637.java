@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,8 +13,57 @@ import java.util.List;
 
 public class Solution1637 {
 
+  private static String getTestString() {
+    // input sample
+    // 4
+    // 1 10 1
+    // 4 4 1
+    // 1 5 1
+    // 6 10 1
+    // answer
+    // 4 3
+    return "4\n" +
+        "1074000001 1074000010 1\n" +
+        "1074000005 1074000005 1\n" +
+        "1074000001 1074000005 1\n" +
+        "1074000006 1074000010 1";
+
+    // Random rand = new Random(System.currentTimeMillis());
+    // StringBuffer randomCase = new StringBuffer();
+    // int N = 100;
+    // randomCase.append(N).append("\n");
+    // for (int i = 0; i < N; ++i) {
+    // int A_C = Math.abs(rand.nextInt(10000));
+    // int B = Math.abs(rand.nextInt(300));
+    // int BB = Math.abs(rand.nextInt(300));
+    // int C_A = Math.abs(rand.nextInt(2147483647));
+    // int CC_A = Math.abs(rand.nextInt(2147483647));
+    // int A = Math.min(Math.min(A_C, C_A), CC_A);
+    // int C = Math.max(Math.max(A_C, C_A), CC_A);
+    // int CC = A == A_C ? (C == C_A ? CC_A : C_A) : (A == C_A ? (C == A_C ? CC_A : A_C) : (C == A_C ? C_A : A_C));
+    // randomCase.append(A).append(" ").append(C).append(" ").append(Math.max(1, B)).append("\n");
+    // randomCase.append(A).append(" ").append(CC).append(" ").append(Math.max(1, BB)).append("\n");
+    // }
+    // System.out.println(randomCase.toString());
+    // return randomCase.toString();
+
+    // StringBuffer wCase = new StringBuffer();
+    // int N = 200;
+    // wCase.append(N).append("\n");
+    // for (int i = 0; i < N; ++i) {
+    // wCase.append(1).append(" ").append(214748).append(" ").append(1).append("\n");
+    // }
+    // return wCase.toString();
+  }
+
   public static void main(String[] args) throws IOException, URISyntaxException {
-    EasyReader.ReadingContext context = new EasyReader.ReadingContext(System.in);
+    // EasyReader.ReadingContext context = new EasyReader.ReadingContext(System.in);
+
+    String testStr = getTestString();
+    ByteArrayInputStream bis = new ByteArrayInputStream(testStr.getBytes());
+    EasyReader.ReadingContext context = new EasyReader.ReadingContext(bis);
+
+    long st = System.nanoTime();
 
     final int N = EasyReader.readInt(context);
 
@@ -44,6 +94,8 @@ public class Solution1637 {
       }
     }
     long answer = maxIndex;
+    System.out.println(answer + "=>" + count(maxIndex - 1, numberPool) + "," + count + "/" + count(maxIndex, numberPool)
+        + "," + count(maxIndex + 1, numberPool));
     if (count % 2 == 0) {
       count = count(maxIndex, numberPool) - count(maxIndex - 1, numberPool);
     } else {
@@ -55,14 +107,16 @@ public class Solution1637 {
     } else {
       System.out.println(answer + " " + count);
     }
+    long dur = System.nanoTime() - st;
+    System.out.println(dur + " nsec" + " / " + (dur / 1000000) + " msec");
   }
 
-  private static long count(long index, NumberHolder numbers) {
+  private static long count(long midIndex, NumberHolder numbers) {
     long count = 0;
     Iterator<NumberStruct> numIter = numbers.iterator();
     while (numIter.hasNext()) {
       NumberStruct number = numIter.next();
-      count += number.count(index);
+      count += number.count(midIndex);
     }
     return count;
   }
@@ -72,11 +126,11 @@ public class Solution1637 {
     int B;
     int C;
 
-    public long count(long index) {
-      if (A > index) {
+    public long count(long midIndex) {
+      if (A > midIndex) {
         return 0;
       }
-      return ((Math.min(C, index) - A) / B) + 1;
+      return ((Math.min(C, midIndex) - A) / B) + 1;
     }
   }
 
@@ -95,6 +149,7 @@ public class Solution1637 {
       return array.iterator();
     }
   }
+
 
   public static class EasyReader {
     public static class ReadingContext {
