@@ -30,14 +30,40 @@ public class Solution11266 {
     // answer
     // 3
     // 1 6 7
-    return "7 7\n" +
+    // return "7 7\n" +
+    // "1 4\n" +
+    // "4 5\n" +
+    // "5 1\n" +
+    // "1 6\n" +
+    // "6 7\n" +
+    // "2 7\n" +
+    // "7 3";
+
+    // input sample
+    // 7 6
+    // 1 4
+    // 1 3
+    // 5 1
+    // 1 6
+    // 7 1
+    // 2 1
+    // answer
+    // 1
+    // 1
+    return "13 13\n" +
     "1 4\n" +
-    "4 5\n" +
+    "1 3\n" +
     "5 1\n" +
     "1 6\n" +
-    "6 7\n" +
-    "2 7\n" +
-    "7 3";
+    "7 1\n" +
+    "2 1\n" +
+    "3 8\n" +
+    "3 9\n" +
+    "8 9\n"+
+    "10 11\n" +
+    "10 12\n" +
+    "11 12\n" +
+    "13 12";
   }
 
   public static void main(String[] args) throws IOException, URISyntaxException {
@@ -62,84 +88,117 @@ public class Solution11266 {
 
     int[] rank = new int[V + 1];
     int[] lowRank = new int[V + 1];
+    int[] path = new int[V + 1];
+    int pathOffset = 1;
     Deque<Integer> stack = new ArrayDeque<Integer>();
     Deque<Integer> pathStack = new ArrayDeque<Integer>();
 
     boolean[] visit = new boolean[V + 1];
+    boolean[] answerChecker = new boolean[V + 1];
     int[] answer = new int[V + 1];
-    int offset = 1;
+    int answerOffset = 1;
     for (int v = 1; v <= V; ++v) {
       if (visit[v]) {
         continue;
       }
 
-      visit[v] = true;
-      List<Integer> rootChildren = graph.get(v);
-      pathStack.push(v);
-      boolean visitAllOnFirst = true;
-      if (rootChildren != null && !rootChildren.isEmpty()) {
-        Iterator<Integer> cIterator = rootChildren.iterator();
-        int c = cIterator.next();
-        stack.push(c);
-        do {
-          int r = 1;
-          rank[v] = r;
-          int scan = 1;
-          lowRank[v] = r;
-          while (!stack.isEmpty()) {
-            int pop = stack.pop();
-            pathStack.push(v);
-            r++;
-            rank[v] = r;
-            lowRank[v] = r;
-            visit[pop] = true;
-            List<Integer> popChild = graph.get(pop);
-            if (popChild != null && !popChild.isEmpty()) {
-              Iterator<Integer> iterator = popChild.iterator();
-              while (iterator.hasNext()) {
-                int popC = iterator.next();
-                if (popC == pop) {
-                  continue;
+      // dfs from (root = v)
+      final int root = v;
+
+      stack.push(root);
+      pathStack.push(0);
+      while (!stack.isEmpty()) {
+        int pop = stack.pop();
+        int prePath = pathStack.pop();
+        if (visit[pop]) {
+          continue;
+        }
+        if (path[pathOffset - 1] != prePath) {
+          // back to pre path
+          int markLowRank = lowRank[path[pathOffset - 1]];
+          do {
+            --pathOffset;
+            if (pathOffset <= 0) {
+              break;
+            }
+            if (!answerChecker[path[pathOffset - 1]]) {
+              if (root == path[pathOffset - 1]) {
+                if (!stack.isEmpty()) {
+                  answerOffset = pushAnswer(answer, answerOffset, root);
+                  answerChecker[root] = true;
                 }
-                if (visit[popC]) {
-                  lowRank[pop] = Math.min(lowRank[pop], lowRank[popC]);
-                } else {
-                  stack.push(popC);
-                }
+              } else if (markLowRank >= lowRank[path[pathOffset - 1]]) {
+                answerOffset = pushAnswer(answer, answerOffset, path[pathOffset - 1]);
+                answerChecker[path[pathOffset - 1]] = true;
               }
             }
-          }
+            markLowRank = Math.min(markLowRank, lowRank[path[pathOffset - 1]]);
+          } while (path[pathOffset - 1] != prePath);
+        }
 
-          if (cIterator.hasNext()) {
-            c = cIterator.next();
-            if (!visit[c]) {
-              visitAllOnFirst = false;
-              stack.push(c);
+        visit[pop] = true;
+        rank[pop] = pathOffset;
+        lowRank[pop] = pathOffset;
+        path[pathOffset++] = pop;
+
+        List<Integer> rootChildren = graph.get(pop);
+        if (rootChildren != null) {
+          Iterator<Integer> childIterator = rootChildren.iterator();
+          while (childIterator.hasNext()) {
+            int child = childIterator.next();
+            if (!visit[child]) {
+              stack.push(child);
+              pathStack.push(pop);
+            } else if (prePath != child) {
+              lowRank[pop] = Math.min(lowRank[pop], lowRank[child]);
             }
           }
-        } while (cIterator.hasNext());
+        }
+      }
 
+      int markLowRank = lowRank[path[pathOffset - 1]];
+      for (pathOffset = pathOffset - 1; pathOffset > 1; --pathOffset) {
+        // back to root path
+        if (!answerChecker[path[pathOffset - 1]]) {
+          if (root == path[pathOffset - 1]) {
+            if (!stack.isEmpty()) {
+              answerOffset = pushAnswer(answer, answerOffset, root);
+              answerChecker[root] = true;
+            }
+          } else if (markLowRank >= lowRank[path[pathOffset - 1]]) {
+            answerOffset = pushAnswer(answer, answerOffset, path[pathOffset - 1]);
+            answerChecker[path[pathOffset - 1]] = true;
+          }
+        }
+        markLowRank = Math.min(markLowRank, lowRank[path[pathOffset - 1]]);
       }
-      if (!visitAllOnFirst) {
-        offset = pushAnswer(answer, offset, v);
-      }
+
       stack.clear();
+      pathStack.clear();
     }
 
-    System.out.println(offset - 1);
-    for (int i = offset; i > 0; --i) {
-      System.out.print(popAnswer(answer, i) + " ");
+    StringBuffer sb = new StringBuffer();
+    sb.append(answerOffset - 1);
+    if (answerOffset - 1 > 0) {
+      sb.append("\n");
+      for (int i = answerOffset; i > 1; --i) {
+        if (answerOffset != i) {
+          sb.append(" ");
+        }
+        sb.append(popAnswer(answer, i));
+      }
+      answerOffset = 1;
     }
-    System.out.println();
+
+    System.out.println(sb.toString());
     long dur = System.nanoTime() - st;
     System.out.println(dur + " nsec" + " / " + (dur / 1000000) + " msec");
   }
 
   private static int pushAnswer(int[] answer, int offset, int num) {
-    System.out.println("push answer " + num + "/" + offset);
     int scan = offset;
     answer[scan] = num;
-    while (scan / 2 > 0 && answer[scan] > answer[scan / 2]) {
+    while (scan / 2 > 0 && answer[scan] < answer[scan / 2]) {
       int temp = answer[scan];
       answer[scan] = answer[scan / 2];
       answer[scan / 2] = temp;
