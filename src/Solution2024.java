@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 
-public class Solution2024_2 {
+public class Solution2024 {
 
   private static String getTestString() {
     // input sample
