@@ -1,17 +1,15 @@
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -52,26 +50,30 @@ public class Solution2843 {
   public static void main(String[] args) throws IOException, URISyntaxException {
     // EasyReader.ReadingContext context = new EasyReader.ReadingContext(System.in);
 
-    String testStr = getTestString();
-    ByteArrayInputStream bis = new ByteArrayInputStream(testStr.getBytes());
-    EasyReader.ReadingContext context = new EasyReader.ReadingContext(bis);
+    // String testStr = getTestString();
+    // ByteArrayInputStream bis = new ByteArrayInputStream(testStr.getBytes());
+    // EasyReader.ReadingContext context = new EasyReader.ReadingContext(bis);
+
+    URL resource = Solution2843.class.getClassLoader().getResource("Sample2843.in");
+    EasyReader.ReadingContext context = new EasyReader.ReadingContext(Paths.get(resource.toURI()));
 
     long st = System.nanoTime();
 
     final int N = EasyReader.readInt(context);
     int[] P = new int[N + 1];
-    Map<Integer, List<Integer>> dests = new HashMap<Integer, List<Integer>>();
+    // Map<Integer, List<Integer>> dests = new HashMap<Integer, List<Integer>>();
     for (int n = 1; n <= N; ++n) {
       int d = EasyReader.readInt(context);
-      List<Integer> list = dests.get(d);
-      if (list == null) {
-        list = new ArrayList<>();
-        dests.put(d, list);
-      }
-      list.add(n);
+      // List<Integer> list = dests.get(d);
+      // if (list == null) {
+      // list = new ArrayList<Integer>();
+      // dests.put(d, list);
+      // }
+      // list.add(n);
       union(P, d, n);
-      System.out.println(Arrays.toString(P));
     }
+    long dur1 = System.nanoTime() - st;
+    System.out.println(dur1 + " nsec" + " / " + (dur1 / 1000000) + " msec");
     final int Q = EasyReader.readInt(context);
     for (int q = 0; q < Q; ++q) {
       int t = EasyReader.readInt(context);
@@ -84,7 +86,7 @@ public class Solution2843 {
           System.out.println(result);
         }
       } else if (t == 2) {
-        remove(P, dests, s);
+        // remove(P, dests, s);
       }
     }
 
@@ -100,9 +102,9 @@ public class Solution2843 {
     p[s] = 0;
 
     Deque<Integer> q = new ArrayDeque<Integer>();
-    q.add(s);
+    q.push(s);
     while (!q.isEmpty()) {
-      int pop = q.poll();
+      int pop = q.pop();
 
       List<Integer> list = dests.get(pop);
       if (list != null) {
@@ -114,7 +116,7 @@ public class Solution2843 {
           }
           p[next] = 0;
           union(p, s, next);
-          q.add(next);
+          q.push(next);
         }
       }
     }
